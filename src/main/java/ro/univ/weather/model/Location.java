@@ -1,11 +1,16 @@
 package ro.univ.weather.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * Reprezinta o locatie geografica (oras, tara, coordonate GPS).
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Location implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -15,7 +20,12 @@ public class Location implements Serializable {
     private final double latitude;
     private final double longitude;
 
-    public Location(String name, String country, String adminRegion, double latitude, double longitude) {
+    @JsonCreator
+    public Location(@JsonProperty("name") String name, 
+                    @JsonProperty("country") String country, 
+                    @JsonProperty("adminRegion") String adminRegion, 
+                    @JsonProperty("latitude") double latitude, 
+                    @JsonProperty("longitude") double longitude) {
         this.name = Objects.requireNonNull(name, "Numele orasului nu poate fi null");
         this.country = country != null ? country : "";
         this.adminRegion = adminRegion != null ? adminRegion : "";
@@ -77,4 +87,3 @@ public class Location implements Serializable {
         return getDisplayName();
     }
 }
-

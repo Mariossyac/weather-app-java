@@ -65,6 +65,7 @@ out/
 *.sqlite
 *.sqlite3
 cache/
+favorites.json
 
 # OS generated files
 Thumbs.db
