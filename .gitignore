@@ -1,5 +1,6 @@
 # Agent & AI workspace files
 .agents/
+DESCRIERE_PROIECT.md
 *.log
 
 # Compiled Java class files
