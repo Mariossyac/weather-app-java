@@ -14,11 +14,13 @@ import java.awt.*;
 public class CurrentWeatherPanel extends JPanel {
 
     private final JLabel cityLabel;
+    private final JLabel iconLabel;
     private final JLabel conditionLabel;
     private final JLabel tempLabel;
     private final JLabel feelsLikeLabel;
     private final JLabel humidityLabel;
     private final JLabel windLabel;
+    private final JLabel precipLabel;
     private final JLabel updateTimeLabel;
 
     public CurrentWeatherPanel() {
@@ -46,41 +48,56 @@ public class CurrentWeatherPanel extends JPanel {
         add(topPanel, BorderLayout.NORTH);
 
         // 2. Zona centrala: Temperatura si Starea vremii
-        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 10));
+        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 18, 10));
         centerPanel.setOpaque(false);
 
         tempLabel = new JLabel("-- °C");
         tempLabel.setFont(new Font("Segoe UI", Font.BOLD, 46));
         tempLabel.setForeground(new Color(15, 23, 42));
 
+        // Label dedicat pentru iconita meteo cu font specific de emoji
+        iconLabel = new JLabel("");
+        iconLabel.setFont(getEmojiFont(38));
+
         conditionLabel = new JLabel("");
         conditionLabel.setFont(new Font("Segoe UI", Font.PLAIN, 20));
         conditionLabel.setForeground(new Color(51, 65, 85));
 
         centerPanel.add(tempLabel);
+        centerPanel.add(iconLabel);
         centerPanel.add(conditionLabel);
         add(centerPanel, BorderLayout.CENTER);
 
-        // 3. Zona inferioara: Detalii suplimentare (Umiditate, Vant, Resimtit)
-        JPanel detailsPanel = new JPanel(new GridLayout(1, 3, 15, 0));
+        // 3. Zona inferioara: 4 indicatori secundari (Resimtit, Umiditate, Vant, Precipitatii)
+        JPanel detailsPanel = new JPanel(new GridLayout(1, 4, 12, 0));
         detailsPanel.setOpaque(false);
-        detailsPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
+        detailsPanel.setBorder(new EmptyBorder(12, 0, 0, 0));
 
-        feelsLikeLabel = createDetailLabel("🌡️ Resimțit: -- °C");
-        humidityLabel = createDetailLabel("💧 Umiditate: -- %");
-        windLabel = createDetailLabel("💨 Vânt: -- km/h");
+        feelsLikeLabel = createDetailLabel("Resimțit: -- °C");
+        humidityLabel = createDetailLabel("Umiditate: -- %");
+        windLabel = createDetailLabel("Vânt: -- km/h");
+        precipLabel = createDetailLabel("Precipitații: -- %");
 
         detailsPanel.add(feelsLikeLabel);
         detailsPanel.add(humidityLabel);
         detailsPanel.add(windLabel);
+        detailsPanel.add(precipLabel);
         add(detailsPanel, BorderLayout.SOUTH);
     }
 
     private JLabel createDetailLabel(String initialText) {
         JLabel label = new JLabel(initialText);
-        label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        label.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         label.setForeground(new Color(71, 85, 105));
         return label;
+    }
+
+    private Font getEmojiFont(int size) {
+        Font font = new Font("Segoe UI Emoji", Font.PLAIN, size);
+        if (!font.getFamily().equalsIgnoreCase("Segoe UI Emoji")) {
+            font = new Font("Segoe UI Symbol", Font.PLAIN, size);
+        }
+        return font;
     }
 
     /**
@@ -94,11 +111,19 @@ public class CurrentWeatherPanel extends JPanel {
 
         cityLabel.setText(location.getDisplayName());
         tempLabel.setText(String.format(java.util.Locale.US, "%.1f °C", current.getTemperature()));
-        conditionLabel.setText(String.format("%s  %s", current.getIconEmoji(), current.getDescription()));
+        iconLabel.setText(current.getIconEmoji());
+        conditionLabel.setText(current.getDescription());
 
-        feelsLikeLabel.setText(String.format(java.util.Locale.US, "🌡️ Resimțit: %.1f °C", current.getApparentTemperature()));
-        humidityLabel.setText(String.format("💧 Umiditate: %d %%", current.getHumidity()));
-        windLabel.setText(String.format(java.util.Locale.US, "💨 Vânt: %.1f km/h", current.getWindSpeed()));
+        feelsLikeLabel.setText(String.format(java.util.Locale.US, "Resimțit: %.1f °C", current.getApparentTemperature()));
+        humidityLabel.setText(String.format("Umiditate: %d %%", current.getHumidity()));
+        windLabel.setText(String.format(java.util.Locale.US, "Vânt: %.1f km/h", current.getWindSpeed()));
+
+        if (current.getPrecipitation() > 0) {
+            precipLabel.setText(String.format(java.util.Locale.US, "Precipitații: %d %% (%.1f mm)", 
+                    current.getPrecipitationProbability(), current.getPrecipitation()));
+        } else {
+            precipLabel.setText(String.format("Precipitații: %d %%", current.getPrecipitationProbability()));
+        }
 
         if (current.getTime() != null && current.getTime().contains("T")) {
             String timePart = current.getTime().substring(current.getTime().indexOf("T") + 1);
@@ -108,4 +133,3 @@ public class CurrentWeatherPanel extends JPanel {
         }
     }
 }
-

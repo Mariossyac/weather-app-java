@@ -44,8 +44,8 @@ public class MainFrame extends JFrame {
 
     private void initUI() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(920, 680);
-        setMinimumSize(new Dimension(800, 580));
+        setSize(960, 700);
+        setMinimumSize(new Dimension(840, 600));
         setLocationRelativeTo(null); // Centreaza fereastra pe ecran
 
         JPanel rootPanel = new JPanel(new BorderLayout(15, 15));
@@ -92,7 +92,7 @@ public class MainFrame extends JFrame {
         JPanel searchBox = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         searchBox.setOpaque(false);
 
-        searchField = new JTextField(16);
+        searchField = new JTextField(18);
         searchField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         searchField.putClientProperty("JTextField.placeholderText", "Introdu un oraș (ex: Brașov)...");
         searchField.addKeyListener(new KeyAdapter() {
@@ -104,7 +104,7 @@ public class MainFrame extends JFrame {
             }
         });
 
-        searchButton = new JButton("Caută 🔍");
+        searchButton = new JButton("Caută");
         searchButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
         searchButton.addActionListener(e -> performSearch(searchField.getText()));
 
@@ -128,7 +128,7 @@ public class MainFrame extends JFrame {
             }
         });
 
-        favoriteToggleButton = new JButton("⭐ Salvează");
+        favoriteToggleButton = new JButton("☆ Salvează");
         favoriteToggleButton.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         favoriteToggleButton.addActionListener(e -> toggleFavorite());
 
@@ -158,7 +158,6 @@ public class MainFrame extends JFrame {
                                 "Nu a fost găsit niciun oraș cu denumirea: \"" + query + "\".", 
                                 "Niciun rezultat", JOptionPane.INFORMATION_MESSAGE);
                     } else {
-                        // Selectam prima locatie gasita
                         Location first = locations.get(0);
                         loadWeatherForLocation(first);
                     }
@@ -221,7 +220,7 @@ public class MainFrame extends JFrame {
             favoriteToggleButton.setText("★ În favorite");
             favoriteToggleButton.setForeground(new Color(217, 119, 6)); // Amber / Gold
         } else {
-            favoriteToggleButton.setText("☆ Adaugă");
+            favoriteToggleButton.setText("☆ Salvează");
             favoriteToggleButton.setForeground(Color.BLACK);
         }
     }
@@ -254,4 +253,3 @@ public class MainFrame extends JFrame {
         searchField.setEnabled(!loading);
     }
 }
-

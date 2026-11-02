@@ -42,9 +42,6 @@ public class WeatherApiService {
 
     /**
      * Cauta locatii dupa nume (asincron).
-     *
-     * @param cityName Numele orasului introdus de utilizator
-     * @return O lista de locatii gasite
      */
     public CompletableFuture<List<Location>> searchLocationsAsync(String cityName) {
         if (cityName == null || cityName.trim().isEmpty()) {
@@ -68,18 +65,15 @@ public class WeatherApiService {
 
     /**
      * Obtine datele meteo curente si prognoza pentru o locatie (asincron).
-     *
-     * @param location Locatia pentru care se doreste prognoza
-     * @return Raportul meteo complet
      */
     public CompletableFuture<WeatherReport> fetchWeatherAsync(Location location) {
         if (location == null) {
             return CompletableFuture.failedFuture(new IllegalArgumentException("Locatia nu poate fi null"));
         }
 
-        // Folosim Locale.US pentru ca formatarea coordonatelor sa fie cu punct (ex: 44.432, nu 44,432)
+        // Cerem si precipitatiile curente + probabilitatea de precipitatii zilnica
         String url = String.format(Locale.US,
-                "%s?latitude=%.4f&longitude=%.4f&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto",
+                "%s?latitude=%.4f&longitude=%.4f&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto",
                 FORECAST_URL, location.getLatitude(), location.getLongitude());
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -120,28 +114,33 @@ public class WeatherApiService {
         try {
             JsonNode root = objectMapper.readTree(json);
 
-            // 1. Parsare vreme curenta
-            JsonNode current = root.path("current");
-            double temp = current.path("temperature_2m").asDouble();
-            double apparentTemp = current.path("apparent_temperature").asDouble();
-            int humidity = current.path("relative_humidity_2m").asInt();
-            double windSpeed = current.path("wind_speed_10m").asDouble();
-            int weatherCode = current.path("weather_code").asInt();
-            String time = current.path("time").asText();
-
-            var weatherInfo = WeatherCodeMapper.getInfo(weatherCode);
-            CurrentWeather currentWeather = new CurrentWeather(
-                    temp, apparentTemp, humidity, windSpeed, weatherCode,
-                    weatherInfo.description(), weatherInfo.icon(), time
-            );
-
-            // 2. Parsare prognoza zilnica pe 7 zile
+            // 1. Parsare date zilnice (pentru prognoza si probabilitate precipitatii de azi)
             JsonNode daily = root.path("daily");
             JsonNode dates = daily.path("time");
             JsonNode codes = daily.path("weather_code");
             JsonNode maxTemps = daily.path("temperature_2m_max");
             JsonNode minTemps = daily.path("temperature_2m_min");
+            JsonNode precipProbs = daily.path("precipitation_probability_max");
 
+            int todayPrecipProb = (precipProbs.isArray() && !precipProbs.isEmpty()) ? precipProbs.get(0).asInt(0) : 0;
+
+            // 2. Parsare vreme curenta
+            JsonNode current = root.path("current");
+            double temp = current.path("temperature_2m").asDouble();
+            double apparentTemp = current.path("apparent_temperature").asDouble();
+            int humidity = current.path("relative_humidity_2m").asInt();
+            double windSpeed = current.path("wind_speed_10m").asDouble();
+            double precipitation = current.path("precipitation").asDouble(0.0);
+            int weatherCode = current.path("weather_code").asInt();
+            String time = current.path("time").asText();
+
+            var weatherInfo = WeatherCodeMapper.getInfo(weatherCode);
+            CurrentWeather currentWeather = new CurrentWeather(
+                    temp, apparentTemp, humidity, windSpeed, precipitation, todayPrecipProb,
+                    weatherCode, weatherInfo.description(), weatherInfo.icon(), time
+            );
+
+            // 3. Parsare prognoza zilnica pe 7 zile
             List<DailyForecast> forecasts = new ArrayList<>();
             if (dates.isArray()) {
                 for (int i = 0; i < dates.size(); i++) {
@@ -149,9 +148,10 @@ public class WeatherApiService {
                     int dayCode = codes.get(i).asInt();
                     double maxT = maxTemps.get(i).asDouble();
                     double minT = minTemps.get(i).asDouble();
+                    int prob = (precipProbs.isArray() && i < precipProbs.size()) ? precipProbs.get(i).asInt(0) : 0;
                     var dayInfo = WeatherCodeMapper.getInfo(dayCode);
 
-                    forecasts.add(new DailyForecast(date, minT, maxT, dayCode, dayInfo.description(), dayInfo.icon()));
+                    forecasts.add(new DailyForecast(date, minT, maxT, prob, dayCode, dayInfo.description(), dayInfo.icon()));
                 }
             }
 
@@ -161,4 +161,3 @@ public class WeatherApiService {
         }
     }
 }
-

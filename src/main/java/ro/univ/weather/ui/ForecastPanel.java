@@ -55,7 +55,7 @@ public class ForecastPanel extends JPanel {
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(226, 232, 240), 1, true),
-                new EmptyBorder(12, 8, 12, 8)
+                new EmptyBorder(12, 6, 12, 6)
         ));
 
         // 1. Ziua saptamanii
@@ -70,9 +70,9 @@ public class ForecastPanel extends JPanel {
         dateLabel.setForeground(new Color(100, 116, 139));
         dateLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // 3. Iconita meteo
+        // 3. Iconita meteo (cu font dedicat Segoe UI Emoji)
         JLabel iconLabel = new JLabel(df.getIconEmoji());
-        iconLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 28));
+        iconLabel.setFont(getEmojiFont(30));
         iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // 4. Temperaturi max / min
@@ -81,7 +81,17 @@ public class ForecastPanel extends JPanel {
         tempLabel.setForeground(new Color(15, 23, 42));
         tempLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // 5. Descriere scurta
+        // 5. Probabilitate de precipitatii
+        JLabel precipLabel = new JLabel("Ploaie: " + df.getPrecipitationProbability() + "%");
+        precipLabel.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        if (df.getPrecipitationProbability() >= 40) {
+            precipLabel.setForeground(new Color(2, 132, 199)); // Albastru ploaie
+        } else {
+            precipLabel.setForeground(new Color(148, 163, 184)); // Gri discret
+        }
+        precipLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // 6. Descriere scurta
         JLabel descLabel = new JLabel(df.getDescription());
         descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 10));
         descLabel.setForeground(new Color(71, 85, 105));
@@ -89,14 +99,23 @@ public class ForecastPanel extends JPanel {
 
         card.add(dayLabel);
         card.add(dateLabel);
-        card.add(Box.createVerticalStrut(8));
+        card.add(Box.createVerticalStrut(6));
         card.add(iconLabel);
-        card.add(Box.createVerticalStrut(8));
+        card.add(Box.createVerticalStrut(6));
         card.add(tempLabel);
+        card.add(Box.createVerticalStrut(4));
+        card.add(precipLabel);
         card.add(Box.createVerticalStrut(4));
         card.add(descLabel);
 
         return card;
     }
-}
 
+    private Font getEmojiFont(int size) {
+        Font font = new Font("Segoe UI Emoji", Font.PLAIN, size);
+        if (!font.getFamily().equalsIgnoreCase("Segoe UI Emoji")) {
+            font = new Font("Segoe UI Symbol", Font.PLAIN, size);
+        }
+        return font;
+    }
+}
