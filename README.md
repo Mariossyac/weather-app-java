@@ -21,3 +21,4 @@ O aplicație desktop modernă și intuitivă pentru vizualizarea stării vremii 
 * **Colecții Java:** `List`, `Map`, `Set` pentru gestionarea prognozelor și a istoricului.
 * **Concurență / Multithreading:** Apeluri asincrone la API pentru o interfață fluidă și fără blocaje (`CompletableFuture`).
 * **Design Patterns:** MVC (Model-View-Controller), Singleton (servicii API/stocare), Observer.
+
